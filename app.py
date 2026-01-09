@@ -7,10 +7,10 @@ st.set_page_config(page_title="Hausmeister-Service", page_icon="🔧")
 
 # 1. Verbindung zum Google Sheet herstellen
 # Die URL ist der Link zu deinem Google Sheet (Freigabe: "Jeder mit dem Link kann bearbeiten")
-sheet_url = "DEIN_GOOGLE_SHEET_LINK_HIER"
+sheet_url = "https://docs.google.com/spreadsheets/d/14FQqsnORuzzn3XUE-9I1q9TL1vWsf4Vagbk_h0_3yug/edit?usp=sharing"
 conn = st.connection("gsheets", type=GSheetsConnection)
 
-st.title("🔧 Ticket-System")
+st.title("🔧 Ticket-System Blattner Services")
 
 with st.form("ticket_form", clear_on_submit=True):
     name = st.text_input("Name / Wohneinheit")
