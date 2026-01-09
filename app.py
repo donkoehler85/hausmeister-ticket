@@ -1,31 +1,45 @@
 import streamlit as st
-from datetime import datetime
+from streamlit_gsheets import GSheetsConnection
 import pandas as pd
+from datetime import datetime
 
-# Titel der App
-st.title("🛠️ Hausmeister-Service Blattner Ticket-System")
-st.write("Bitte füllen Sie das Formular aus, um einen Schaden oder Wunsch zu melden.")
+st.set_page_config(page_title="Hausmeister-Service", page_icon="🔧")
 
-# Formular-Felder
-with st.form("ticket_form"):
-    name = st.text_input("Ihr Name / Wohneinheit")
-    kategorie = st.selectbox("Was ist das Problem?", ["Heizung", "Licht/Elektro", "Schlüssel/Schloss", "Garten/Außenanlage", "Sonstiges"])
-    beschreibung = st.text_area("Beschreibung des Anliegens")
-    dringlichkeit = st.select_slider("Wie dringend ist es?", options=["Normal", "Wichtig", "EILIG!"])
+# 1. Verbindung zum Google Sheet herstellen
+# Die URL ist der Link zu deinem Google Sheet (Freigabe: "Jeder mit dem Link kann bearbeiten")
+sheet_url = "DEIN_GOOGLE_SHEET_LINK_HIER"
+conn = st.connection("gsheets", type=GSheetsConnection)
+
+st.title("🔧 Ticket-System")
+
+with st.form("ticket_form", clear_on_submit=True):
+    name = st.text_input("Name / Wohneinheit")
+    kategorie = st.selectbox("Anliegen", ["Licht", "Wasser", "Heizung", "Garten", "Sonstiges"])
+    beschreibung = st.text_area("Beschreibung")
+    dringlichkeit = st.select_slider("Dringlichkeit", options=["Normal", "Wichtig", "NOTFALL"])
     
     submit = st.form_submit_button("Ticket absenden")
 
 if submit:
     if name and beschreibung:
-        # Hier würde man normalerweise in eine Datenbank schreiben
-        timestamp = datetime.now().strftime("%d.%m.%Y %H:%M")
+        # Bestehende Daten laden
+        existing_data = conn.read(spreadsheet=sheet_url, usecols=[0,1,2,3,4,5])
         
-        # Bestätigung für den Mieter
-        st.success(f"Vielen Dank, {name}! Ihr Ticket wurde am {timestamp} aufgenommen.")
+        # Neues Ticket erstellen
+        new_ticket = pd.DataFrame([{
+            "Zeitstempel": datetime.now().strftime("%d.%m.%Y %H:%M"),
+            "Name": name,
+            "Kategorie": kategorie,
+            "Beschreibung": beschreibung,
+            "Dringlichkeit": dringlichkeit,
+            "Status": "Offen"
+        }])
         
-        # Demo: Speichern in einer lokalen Datei (CSV)
-        new_data = {"Zeit": [timestamp], "Name": [name], "Typ": [kategorie], "Info": [beschreibung], "Prio": [dringlichkeit]}
-        df = pd.DataFrame(new_data)
-        df.to_csv("tickets.csv", mode='a', header=not pd.io.common.file_exists("tickets.csv"), index=False)
+        # Daten kombinieren und zurückschreiben
+        updated_df = pd.concat([existing_data, new_ticket], ignore_index=True)
+        conn.update(spreadsheet=sheet_url, data=updated_df)
+        
+        st.success("Ticket wurde gespeichert!")
+        # HIER KOMMT DER TRICK FÜR DIE BENACHRICHTIGUNG (siehe unten)
     else:
-        st.error("Bitte füllen Sie mindestens Name und Beschreibung aus.")
+        st.error("Bitte Felder ausfüllen.")
