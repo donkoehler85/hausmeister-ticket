@@ -5,7 +5,7 @@ st.set_page_config(page_title="Hausmeister Zentrale", layout="wide")
 
 # 1. LINK ZUM SHEET (Wichtig: Am Ende muss /export?format=csv stehen!)
 # Kopiere deinen Sheet Link bis zum langen Code und hänge das Ende an:
-SHEET_ID = "18AutADfei-GjIC-hKokIOGrSAlzeMOpJHtxlKLgWXNY"
+SHEET_ID = "/edit?resourcekey=&gid=1298228785#gid=1298228785"
 URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv"
 
 st.title("📋 Offene Reparatur-Aufträge")
